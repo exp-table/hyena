@@ -8,10 +8,11 @@ import {SevenKiloCrystal as SKC} from "src/SevenKiloCrystal.sol";
 contract SevenKiloCrystalTest is Test {
 
     function test() external {
-        bytes memory payload = SevenKiloCrystal.cook();
-        payload = cram(payload, uint(100));
-        payload = SKC.cram(payload, uint(2**256 - 1));
-        payload = SKC.cram(payload, uint(100));
+        bytes memory payload = SKC.cook();
+        payload = SKC.addition(payload, uint(100));
+        payload = SKC.addition(payload, uint(2**256 - 1));
+        payload = SKC.addition(payload, uint(100));
         console.logBytes(payload);
+        //payload = SKC.addition(payload, uint(100));
     }
 }
