@@ -2,12 +2,12 @@
 
 # SevenKiloCrystal • [![tests](https://github.com/exp-table/seven-kilo-crystal/actions/workflows/ci.yml/badge.svg?label=tests)](https://github.com/exp-table/seven-kilo-crystal/actions/workflows/ci.yml) ![license](https://img.shields.io/github/license/refcell/femplate?label=license) ![solidity](https://img.shields.io/badge/solidity-^0.8.17-lightgrey)
 
-An **not very efficient** data packing library.
+A data packing library.
 
 ## What is Seven Kilo Crystal?
 
 SKC is a library that is an alternative to `abi.encode` and `abi.encodePacked` that can result in smaller `bytes`.
-It is **NOT** optimized and consumes more gas than the two options above.
+It **WON'T** beat `abi.encode` or `abi.encodePacked` in terms of gas consumption but will in the size of the output. A reduction of up to 50% can be obtained.
 
 It serves as educational material.
 
