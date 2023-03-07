@@ -42,26 +42,3 @@ jobs:
   #         submodules: recursive
   #     - name: slither
   #       uses: crytic/slither-action@v0.2.0
-
-  scripts:
-    strategy:
-      fail-fast: true
-    name: Run Unix Scripts
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: nightly
-      - name: dependencies
-        run: forge build --sizes
-        continue-on-error: true
-      - name: Run scripts
-        run: |
-          ls -lsa
-          ls script/
-          for file in script/*; do
-            forge script $file
-          done

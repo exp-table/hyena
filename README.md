@@ -1,55 +1,45 @@
-<img align="right" width="150" height="150" top="100" src="./public/readme.jpg">
+<img align="right" width="150" height="150" top="100" src="./public/readme.png">
 
-# femplate • [![tests](https://github.com/refcell/femplate/actions/workflows/ci.yml/badge.svg?label=tests)](https://github.com/refcell/femplate/actions/workflows/ci.yml) ![license](https://img.shields.io/github/license/refcell/femplate?label=license) ![solidity](https://img.shields.io/badge/solidity-^0.8.17-lightgrey)
+# SevenKiloCrystal • [![tests](https://github.com/exp-table/seven-kilo-crystal/actions/workflows/ci.yml/badge.svg?label=tests)](https://github.com/exp-table/seven-kilo-crystal/actions/workflows/ci.yml) ![license](https://img.shields.io/github/license/refcell/femplate?label=license) ![solidity](https://img.shields.io/badge/solidity-^0.8.17-lightgrey)
 
-A **Clean**, **Robust** Template for Foundry Projects.
+An **not very efficient** data packing library.
 
-### Usage
+## What is Seven Kilo Crystal?
 
-**Building & Testing**
+SKC is a library that is an alternative to `abi.encode` and `abi.encodePacked` that can result in smaller `bytes`.
+It is **NOT** optimized and consumes more gas than the two options above.
 
-Build the foundry project with `forge build`. Then you can run tests with `forge test`.
+It serves as educational material.
 
-**Deployment & Verification**
+**Warning**
 
-Inside the [`utils/`](./utils/) directory are a few preconfigured scripts that can be used to deploy and verify contracts.
+It should be noted that unpacking the crystal (payload) produces an array whose elements order is in reverse w.r.t the elements that were added.
 
-Scripts take inputs from the cli, using silent mode to hide any sensitive information.
+## Installation
 
-_NOTE: These scripts are required to be _executable_ meaning they must be made executable by running `chmod +x ./utils/*`._
+To install with [**Foundry**](https://github.com/gakonst/foundry):
 
-_NOTE: these scripts will prompt you for the contract name and deployed addresses (when verifying). Also, they use the `-i` flag on `forge` to ask for your private key for deployment. This uses silent mode which keeps your private key from being printed to the console (and visible in logs)._
-
-
-### I'm new, how do I get started?
-
-We created a guide to get you started with: [GETTING_STARTED.md](./GETTING_STARTED.md).
-
-
-### Blueprint
-
-```txt
-lib
-├─ forge-std — https://github.com/foundry-rs/forge-std
-├─ solmate — https://github.com/transmissions11/solmate
-scripts
-├─ Deploy.s.sol — Example Contract Deployment Script
-src
-├─ Greeter — Example Contract
-test
-└─ Greeter.t — Example Contract Tests
+```sh
+forge install exp-table/seven-kilo-crystal
 ```
 
+## Usage
+
+```js
+bytes memory crystal = SevenKiloCrystal.cook();
+crystal = SevenKiloCrystal.addition(crystal, uint(100));
+crystal = SevenKiloCrystal.addition(crystal, uint(2**256 - 1));
+uint256[] memory smoked = SevenKiloCrystal.smoke(crystal);
+```
 
 ### Notable Mentions
 
 - [femplate](https://github.com/refcell/femplate)
 - [foundry](https://github.com/foundry-rs/foundry)
-- [solmate](https://github.com/Rari-Capital/solmate)
+- [solady](https://github.com/vectorized/solady)
 - [forge-std](https://github.com/brockelmore/forge-std)
 - [forge-template](https://github.com/foundry-rs/forge-template)
 - [foundry-toolchain](https://github.com/foundry-rs/foundry-toolchain)
-
 
 ### Disclaimer
 
