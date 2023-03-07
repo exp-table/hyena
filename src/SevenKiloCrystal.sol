@@ -3,13 +3,36 @@ pragma solidity ^0.8.17;
 
 library SevenKiloCrystal {
 
-    function cook() internal pure returns (bytes memory kilo) {
+    /// Cook and returns a new crystal (bytes).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// bytes memory crystal = SevenKiloCrystal.cook();
+    /// ```
+    function cook() internal pure returns (bytes memory crystal) {
         assembly {
-            mstore(kilo, 0x40) // add the map and an empty slot
-            mstore(0x40, add(mload(0x40), 0x20)) // update free mem ptr
+            crystal := mload(0x40)
+            mstore(crystal, 0x40) // add the map and an empty slot
+            mstore(0x40, add(crystal, 0x520)) // update free mem ptr
         }
+        return crystal;
     }
 
+    /// Adds a new uint256 compound (value) to the crystal and returns the updated crystal.
+    ///
+    /// # Arguments
+    ///
+    /// * `crystal` - The crystal to add the compound to.
+    /// * `compound` - The compound to add to the crystal.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// bytes memory crystal = SevenKiloCrystal.cook();
+    /// crystal = SevenKiloCrystal.addition(crystal, uint(100));
+    /// crystal = SevenKiloCrystal.addition(crystal, uint(2**256 - 1));
+    /// ```
     function addition(bytes memory crystal, uint256 compound) internal pure returns (bytes memory) {
         assembly {
             // from vectorized/solady
@@ -31,38 +54,80 @@ library SevenKiloCrystal {
             let map := mload(add(crystal, 0x20))
             let mass := add(div(sub(255, clz(compound)), 8), 1)
             // move to big endian
-            compound := shl(clz(compound), compound)
+            compound := shl(sub(256, shl(3, mass)), compound)
             // | 16 bits    |        6 bits          | .... |
             // | bytes used | length of last element | .... |
-            if gt(and(shr(234, map), 0x2ff), 0) {
-                // WRONG
-                return(crystal, add(crystal, mload(crystal)))
+            // get last 6 bits, if they are set => we full
+            if eq(and(shr(234, map), 0x2ff), 0) {
+                // no more space left, move onto next chunk
+                if gt(mass, sub(sub(mload(crystal), 0x20), shr(246, map))) {
+                    mstore(0x40, add(mload(0x40), 0x20)) // update free mem ptr
+                    mstore(crystal, add(mload(crystal), 0x20)) // update bytes length
+                }
+                // store compound
+                mstore(add(add(crystal, 0x40), shr(246, map)), compound)
+                // make space and set the mass (length) of the newly added compound
+                let new_map := or(shl(6, map), mass)
+                new_map := or(and(new_map, 0x003FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF), add(and(map, 0xFFC0000000000000000000000000000000000000000000000000000000000000), shl(246, mass)))
+                // update map
+                mstore(add(crystal, 0x20), new_map)
             }
-            // mem expansion needed if compound's size greater than the chunk left
-            // TODO : recopy entire crystal to new memory if memory collision
-            if gt(mass, sub(sub(mload(crystal), 0x20), shr(246, map))) {
-                // for { let i } lt(i, 0x100) { i := add(i, 0x20) } {
-                //     x := add(x, mload(i))
-                // }
-                let nwptr := add(mload(crystal), 0x20)
-                mstore(0x40, add(mload(0x40), nwptr))
-                mstore(crystal, nwptr)
-            }
-            // store compound
-            mstore(add(add(crystal, 0x40), shr(246, map)), compound)
-            // make space and set the mass (length) of the newly added compound
-            let new_map := or(shl(6, map), mass)
-            new_map := or(and(new_map, 0x003FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF), add(and(map, 0xFFC0000000000000000000000000000000000000000000000000000000000000), shl(246, mass)))
-            // update map
-            mstore(add(crystal, 0x20), new_map)
         }
         return crystal;
     }
 
-    function smoke(bytes memory crystal) internal pure returns (uint256[40] memory smoked) {
-
+    /// Smoke (unpack) the crystal into an array of uint256s.
+    /// The maximum size possible is 40.
+    /// BEWARE ; the elements are returned in the reverse order they were added.
+    ///
+    /// # Arguments
+    ///
+    /// * `crystal` - The crystal to smoke.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// bytes memory crystal = SevenKiloCrystal.cook();
+    /// crystal = SevenKiloCrystal.addition(crystal, uint(100));
+    /// crystal = SevenKiloCrystal.addition(crystal, uint(2**256 - 1));
+    /// uint256[] memory smoked = SevenKiloCrystal.smoke(crystal);
+    /// assert(smoked[0] == 2**256 - 1);
+    /// ```
+    function smoke(bytes memory crystal) internal pure returns (uint256[] memory smoked) {
+        assembly {
+            let map := and(mload(add(crystal, 0x20)), 0x003FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
+            let total_mass := shr(246, mload(add(crystal, 0x20)))
+            smoked := mload(0x40)
+            mstore(0x40, add(smoked, 0x520)) // make space for 40 elements
+            let ptr := add(smoked, 0x20) // where to store next value
+            for {} gt(total_mass, 0) {} {
+                // get the first 6 bits = length of last element
+                let len := and(map, 0x3f)
+                // get the last element, shift it to the right
+                mstore(ptr, shr(sub(256, shl(3, len)), mload(add(add(crystal, 0x40), sub(total_mass, len)))))
+                // update map
+                map := shr(6, map)
+                total_mass := sub(total_mass, len)
+                ptr := add(ptr, 0x20)
+                mstore(smoked, add(mload(smoked), 0x20)) // update smoked's length
+            }
+        }
     }
 
+    /// Returns the molar mass (size in bytes of the compounds) of the crystal.
+    ///
+    /// # Arguments
+    ///
+    /// * `crystal` - The crystal to get the molar mass of.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// bytes memory crystal = SevenKiloCrystal.cook();
+    /// crystal = SevenKiloCrystal.addition(crystal, uint(100));
+    /// crystal = SevenKiloCrystal.addition(crystal, uint(2**256 - 1));
+    /// uint256 length = SevenKiloCrystal.molarMass(crystal);
+    /// ```
     function molarMass(bytes memory crystal) internal pure returns (uint256 mass) {
         assembly {
             mass := shr(246, mload(add(crystal, 0x20)))
