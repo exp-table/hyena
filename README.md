@@ -15,7 +15,7 @@ It serves as educational material.
 
 **Warning**
 
-It should be noted that unpacking the crystal (payload) produces an array whose elements order is in reverse w.r.t the elements that were added.
+It should be noted that unpacking the payload produces an array whose elements order is in reverse w.r.t the elements that were added.
 
 ## Installation
 
