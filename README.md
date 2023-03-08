@@ -7,6 +7,8 @@ A data packing library.
 ## What is Hyena?
 
 Hyena is a library that is an alternative to `abi.encode` and `abi.encodePacked` that can result in smaller `bytes`.
+
+
 It **WON'T** beat `abi.encode` or `abi.encodePacked` in terms of gas consumption but will in the size of the output. A reduction of up to 50% can be obtained.
 
 It serves as educational material.
