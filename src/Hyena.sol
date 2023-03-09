@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 library Hyena {
 
-    /// Cook and returns a new payload.
+    /// Initializes and returns a new payload.
     ///
     /// # Example
     ///
