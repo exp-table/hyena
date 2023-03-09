@@ -29,9 +29,9 @@ forge install exp-table/hyena
 
 ```js
 bytes memory payload = Hyena.init();
-payload = Hyena.crush(crystal, uint(100));
-payload = Hyena.crush(crystal, uint(2**256 - 1));
-uint256[] memory outputs = Hyena.digest(crystal);
+payload = Hyena.crush(payload, uint(100));
+payload = Hyena.crush(payload, uint(2**256 - 1));
+uint256[] memory outputs = Hyena.digest(payload);
 ```
 
 ### Notable Mentions
