@@ -15,6 +15,8 @@ It serves as educational material.
 
 **Warning**
 
+Due to how the internal "map" works, you can only pack 41 32-bytes values.
+
 It should be noted that unpacking the payload produces an array whose elements order is in reverse w.r.t the elements that were added.
 
 ## Installation
